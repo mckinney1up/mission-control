@@ -1,6 +1,9 @@
 type SpritePalette = {
-  primary: string;
-  secondary: string;
+  skin: string;
+  hair: string;
+  top: string;
+  bottom: string;
+  accent: string;
 };
 
 const characters = [
@@ -11,7 +14,13 @@ const characters = [
     state: "typing",
     x: 0.32,
     y: 0.58,
-    palette: { primary: "bg-rose-500", secondary: "bg-amber-200" },
+    palette: {
+      skin: "#f2c29b",
+      hair: "#2f1b12",
+      top: "#b91c1c",
+      bottom: "#0f172a",
+      accent: "#facc15",
+    },
   },
   {
     name: "Margo",
@@ -20,7 +29,13 @@ const characters = [
     state: "routing",
     x: 0.66,
     y: 0.58,
-    palette: { primary: "bg-indigo-500", secondary: "bg-sky-200" },
+    palette: {
+      skin: "#f1d2c5",
+      hair: "#1d1f33",
+      top: "#4338ca",
+      bottom: "#1e293b",
+      accent: "#f472b6",
+    },
   },
   {
     name: "Higgsfield Bot",
@@ -29,7 +44,13 @@ const characters = [
     state: "rendering",
     x: 0.24,
     y: 0.72,
-    palette: { primary: "bg-emerald-500", secondary: "bg-lime-200" },
+    palette: {
+      skin: "#d1f5e4",
+      hair: "#0f766e",
+      top: "#10b981",
+      bottom: "#064e3b",
+      accent: "#bbf7d0",
+    },
   },
   {
     name: "Content Desk",
@@ -38,8 +59,20 @@ const characters = [
     state: "publishing",
     x: 0.74,
     y: 0.72,
-    palette: { primary: "bg-amber-500", secondary: "bg-orange-200" },
+    palette: {
+      skin: "#f8d1b0",
+      hair: "#3b2615",
+      top: "#f97316",
+      bottom: "#7c2d12",
+      accent: "#fde68a",
+    },
   },
+];
+
+const deskPositions = [
+  { x: 0.28, y: 0.32 },
+  { x: 0.5, y: 0.32 },
+  { x: 0.72, y: 0.32 },
 ];
 
 const stateAnimations: Record<string, string> = {
@@ -60,10 +93,39 @@ const stateLabels: Record<string, string> = {
 
 function PixelPerson({ palette }: { palette: SpritePalette }) {
   return (
-    <div className="relative h-6 w-6">
-      <span className={`absolute left-1 right-1 top-0 h-2 rounded-sm ${palette.secondary}`} />
-      <span className={`absolute left-1 right-1 top-2 h-3 rounded-sm ${palette.primary}`} />
-      <span className="absolute left-2 right-2 bottom-0 h-2 rounded-sm bg-slate-800" />
+    <div className="relative h-8 w-6">
+      <span
+        className="absolute left-1 right-1 top-0 h-2 rounded-sm"
+        style={{ backgroundColor: palette.hair }}
+      />
+      <span
+        className="absolute left-1 right-1 top-1 h-2 rounded-sm"
+        style={{ backgroundColor: palette.skin }}
+      />
+      <span
+        className="absolute left-1 right-1 top-3 h-3 rounded-sm"
+        style={{ backgroundColor: palette.top }}
+      />
+      <span
+        className="absolute left-2 right-2 top-4 h-1 rounded-sm"
+        style={{ backgroundColor: palette.accent }}
+      />
+      <span
+        className="absolute left-2 right-2 bottom-0 h-2 rounded-sm"
+        style={{ backgroundColor: palette.bottom }}
+      />
+    </div>
+  );
+}
+
+function PixelDesk() {
+  return (
+    <div className="relative h-6 w-10">
+      <span className="absolute inset-x-0 top-0 h-3 rounded bg-[#d6a675]" />
+      <span className="absolute inset-x-1 top-1 h-1 bg-[#f8e0b8]" />
+      <span className="absolute inset-x-2 top-0 h-1 bg-[#b98454]" />
+      <span className="absolute left-1 bottom-0 h-2 w-2 rounded bg-[#9ca3af]" />
+      <span className="absolute right-1 bottom-0 h-2 w-2 rounded bg-[#9ca3af]" />
     </div>
   );
 }
@@ -100,6 +162,15 @@ export default function OfficeScene() {
           }}
         >
           <div className="pointer-events-none absolute inset-0">
+            {deskPositions.map((desk, index) => (
+              <div
+                key={`desk-${index}`}
+                className="absolute -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${desk.x * 100}%`, top: `${desk.y * 100}%` }}
+              >
+                <PixelDesk />
+              </div>
+            ))}
             {characters.map((character) => (
               <div
                 key={character.name}
@@ -120,7 +191,7 @@ export default function OfficeScene() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className={`h-3 w-3 rounded-full ${character.palette.primary}`} />
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: character.palette.top }} />
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
                       {character.name}
