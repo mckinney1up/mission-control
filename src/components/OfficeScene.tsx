@@ -1,10 +1,15 @@
+type SpritePalette = {
+  primary: string;
+  secondary: string;
+};
+
 const tileMap = [
   ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"],
   ["wall", "shelf", "shelf", "wall-console", "wall-console", "wall", "wall", "wall-console", "wall-console", "shelf", "shelf", "wall"],
   ["wall", "desk", "desk", "floor", "floor", "monitor", "monitor", "floor", "floor", "books", "books", "wall"],
   ["wall", "desk", "desk", "floor", "floor", "floor", "floor", "floor", "floor", "books", "books", "wall"],
-  ["wall", "floor", "floor", "floor", "table", "table", "table", "floor", "floor", "floor", "floor", "wall"],
-  ["wall", "floor", "floor", "floor", "table", "table", "table", "floor", "floor", "floor", "floor", "wall"],
+  ["wall", "floor", "worktable", "worktable", "chair", "floor", "worktable", "worktable", "chair", "floor", "floor", "wall"],
+  ["wall", "floor", "worktable", "worktable", "chair", "floor", "worktable", "worktable", "chair", "floor", "floor", "wall"],
   ["wall", "station", "station", "floor", "floor", "console", "console", "floor", "floor", "crate", "crate", "wall"],
   ["wall", "station", "station", "floor", "floor", "console", "console", "floor", "floor", "crate", "crate", "wall"],
   ["wall", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "wall"],
@@ -32,9 +37,20 @@ const tilePieces: Record<string, { base: string; detail?: string[] }> = {
       "inset-x-2 bottom-1 h-2 rounded bg-[#cbd5f5]",
     ],
   },
-  table: {
-    base: "bg-[#f5cfa6]",
-    detail: ["inset-x-1 top-1 h-1 bg-[#e4b785]", "inset-x-0 bottom-0 h-1 bg-[#d19c62]"],
+  worktable: {
+    base: "bg-[#f4d3a8]",
+    detail: [
+      "left-1 right-1 top-1 h-1 bg-[#e0b784]",
+      "left-2 right-2 top-2 h-2 rounded bg-[#9bc2ff]",
+      "left-4 right-4 bottom-1 h-1 rounded bg-[#475569]",
+    ],
+  },
+  chair: {
+    base: "bg-[#d4d1cc]",
+    detail: [
+      "left-2 right-2 top-1 h-1 rounded bg-[#a8a29e]",
+      "left-1 right-1 top-2 h-2 rounded bg-[#7c6f64]",
+    ],
   },
   monitor: {
     base: "bg-[#fefcf5]",
@@ -62,36 +78,56 @@ const characters = [
   {
     name: "McKinney",
     role: "Creative Director",
-    task: "Reviewing brief",
+    task: "Brief posted 07:30",
+    state: "typing",
     row: 5,
-    col: 4,
-    color: "bg-rose-500",
+    col: 3,
+    palette: { primary: "bg-rose-500", secondary: "bg-amber-200" },
   },
   {
     name: "Margo",
     role: "Operations AI",
-    task: "Routing automations",
+    task: "Things sync + routing",
+    state: "routing",
     row: 5,
     col: 7,
-    color: "bg-indigo-500",
+    palette: { primary: "bg-indigo-500", secondary: "bg-sky-200" },
   },
   {
     name: "Higgsfield Bot",
     role: "Panel Render",
     task: "Queue idle",
+    state: "rendering",
     row: 7,
     col: 3,
-    color: "bg-emerald-500",
+    palette: { primary: "bg-emerald-500", secondary: "bg-lime-200" },
   },
   {
     name: "Content Desk",
     role: "Publishing",
     task: "Next IG beat",
+    state: "publishing",
     row: 7,
-    col: 10,
-    color: "bg-amber-500",
+    col: 9,
+    palette: { primary: "bg-amber-500", secondary: "bg-orange-200" },
   },
 ];
+
+const stateAnimations: Record<string, string> = {
+  typing: "animate-pulse",
+  routing: "animate-bounce",
+  rendering: "animate-ping",
+  publishing: "animate-spin",
+  idle: "",
+};
+
+const stateLabels: Record<string, string> = {
+  typing: "Writing",
+  routing: "Routing",
+  rendering: "Rendering",
+  publishing: "Publishing",
+  idle: "Idle",
+};
 
 function renderTile(type: string, key: string) {
   const tile = tilePieces[type] ?? tilePieces.floor;
@@ -100,6 +136,16 @@ function renderTile(type: string, key: string) {
       {tile.detail?.map((detailClass, index) => (
         <span key={index} className={`absolute ${detailClass}`} />
       ))}
+    </div>
+  );
+}
+
+function PixelPerson({ palette }: { palette: SpritePalette }) {
+  return (
+    <div className="relative h-6 w-6">
+      <span className={`absolute left-1 right-1 top-0 h-2 rounded-sm ${palette.secondary}`} />
+      <span className={`absolute left-1 right-1 top-2 h-3 rounded-sm ${palette.primary}`} />
+      <span className="absolute left-2 right-2 bottom-0 h-2 rounded-sm bg-slate-800" />
     </div>
   );
 }
@@ -136,15 +182,16 @@ export default function OfficeScene() {
             {characters.map((character) => (
               <div
                 key={character.name}
-                className={`flex items-center justify-center rounded-full ${character.color}`}
+                className={`flex items-center justify-center ${stateAnimations[character.state]}`}
                 style={{
                   gridColumn: `${character.col} / span 1`,
                   gridRow: `${character.row} / span 1`,
                   width: "24px",
                   height: "24px",
-                  boxShadow: "0 0 6px rgba(15, 23, 42, 0.2)",
                 }}
-              />
+              >
+                <PixelPerson palette={character.palette} />
+              </div>
             ))}
           </div>
         </div>
@@ -155,16 +202,21 @@ export default function OfficeScene() {
               key={character.name}
               className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4"
             >
-              <div className="flex items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${character.color}`} />
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {character.name}
-                  </p>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {character.role}
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className={`h-3 w-3 rounded-full ${character.palette.primary}`} />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {character.name}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      {character.role}
+                    </p>
+                  </div>
                 </div>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-500">
+                  {stateLabels[character.state]}
+                </span>
               </div>
               <p className="mt-2 text-sm text-slate-500">{character.task}</p>
             </article>
