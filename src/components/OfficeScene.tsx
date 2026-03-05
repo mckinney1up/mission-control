@@ -3,38 +3,127 @@ type SpritePalette = {
   secondary: string;
 };
 
-const tileMap = [
-  ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"],
-  ["wall", "shelf", "shelf", "wall-console", "wall-console", "wall", "wall", "wall-console", "wall-console", "shelf", "shelf", "wall"],
-  ["wall", "desk", "desk", "floor", "floor", "monitor", "monitor", "floor", "floor", "books", "books", "wall"],
-  ["wall", "desk", "desk", "floor", "floor", "floor", "floor", "floor", "floor", "books", "books", "wall"],
-  ["wall", "floor", "worktable", "worktable", "chair", "floor", "worktable", "worktable", "chair", "floor", "floor", "wall"],
-  ["wall", "floor", "worktable", "worktable", "chair", "floor", "worktable", "worktable", "chair", "floor", "floor", "wall"],
-  ["wall", "station", "station", "floor", "floor", "console", "console", "floor", "floor", "crate", "crate", "wall"],
-  ["wall", "station", "station", "floor", "floor", "console", "console", "floor", "floor", "crate", "crate", "wall"],
-  ["wall", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "floor", "wall"],
-  ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"],
+const width = 12;
+
+const topRows = [
+  Array(width).fill("ceiling"),
+  Array(width).fill("wallGreen"),
+  [
+    "cabinet",
+    "cabinet",
+    "window",
+    "window",
+    "cabinet",
+    "cabinet",
+    "window",
+    "window",
+    "cabinet",
+    "cabinet",
+    "window",
+    "window",
+  ],
+  [
+    "machineLeft",
+    "machineRight",
+    "pcStation",
+    "pcStation",
+    "monitorTall",
+    "monitorTall",
+    "pcStation",
+    "pcStation",
+    "machineLeft",
+    "machineRight",
+    "plant",
+    "plant",
+  ],
 ];
 
-const tilePieces: Record<string, { base: string; detail?: string[] }> = {
-  wall: { base: "bg-[#d4d8e5]" },
-  floor: { base: "bg-[#fefcf5]" },
-  "wall-console": {
-    base: "bg-[#d4d8e5]",
+const floorRows = Array.from({ length: 6 }, (_, rowIndex) =>
+  Array.from({ length: width }, (_, colIndex) => ((rowIndex + colIndex) % 2 === 0 ? "floorA" : "floorB")),
+);
+
+const tileMap = [...topRows, ...floorRows];
+
+const overrides: Array<[number, number, string]> = [
+  [5, 2, "worktable"],
+  [5, 3, "worktable"],
+  [5, 4, "chair"],
+  [5, 7, "worktable"],
+  [5, 8, "worktable"],
+  [5, 9, "chair"],
+  [6, 2, "worktable"],
+  [6, 3, "worktable"],
+  [6, 4, "chair"],
+  [6, 7, "worktable"],
+  [6, 8, "worktable"],
+  [6, 9, "chair"],
+  [7, 5, "centerTableTopLeft"],
+  [7, 6, "centerTableTopRight"],
+  [8, 5, "centerTableBottomLeft"],
+  [8, 6, "centerTableBottomRight"],
+  [7, 4, "centerLightRed"],
+  [7, 7, "centerLightBlue"],
+];
+
+overrides.forEach(([row, col, type]) => {
+  if (tileMap[row]) {
+    tileMap[row][col] = type;
+  }
+});
+
+const tilePieces: Record<string, { base: string; detail?: string[]; style?: React.CSSProperties }> = {
+  ceiling: {
+    base: "bg-[#d9ead3]",
+    detail: ["inset-x-0 bottom-0 h-[2px] bg-[#b8d4a9]"],
+  },
+  wallGreen: {
+    base: "bg-[#ecf7d9]",
+    detail: ["inset-x-2 top-1 h-1 bg-[#d0e0b8]", "inset-x-2 bottom-1 h-1 bg-[#d0e0b8]"]
+  },
+  cabinet: {
+    base: "bg-[#f7e2c8]",
     detail: [
-      "left-1 right-1 top-1 h-1 rounded-sm bg-[#a3b5f7]",
-      "left-1 right-1 top-2 h-1 rounded-sm bg-[#fcd34d]",
+      "inset-x-1 top-1 h-1 rounded bg-[#ddb893]",
+      "inset-x-1 top-3 h-1 rounded bg-[#ddb893]",
+      "inset-y-1 left-2 w-[2px] bg-[#b9895e]",
     ],
   },
-  desk: {
-    base: "bg-[#f7d5b3]",
-    detail: ["inset-x-0 top-0 h-1 bg-[#e5b88c]"],
+  window: {
+    base: "bg-[#d0e8ff]",
+    detail: ["inset-1 rounded bg-[#a4d3ff]", "inset-1 border border-white/70"],
   },
-  station: {
-    base: "bg-[#f1dbc2]",
+  machineLeft: {
+    base: "bg-[#dfe3ea]",
+    detail: ["inset-x-1 top-1 h-2 rounded bg-[#b2bfd3]", "left-1 bottom-1 h-2 w-2 rounded bg-[#f87171]"],
+  },
+  machineRight: {
+    base: "bg-[#dfe3ea]",
+    detail: ["inset-x-1 top-1 h-2 rounded bg-[#b2bfd3]", "right-1 bottom-1 h-2 w-2 rounded bg-[#60a5fa]"],
+  },
+  pcStation: {
+    base: "bg-[#fefbf4]",
+    detail: ["left-1 right-1 top-1 h-2 rounded bg-[#9ac7ff]", "left-3 right-3 bottom-1 h-1 rounded bg-[#4b5563]"],
+  },
+  monitorTall: {
+    base: "bg-[#fefbf4]",
+    detail: ["left-1 right-1 top-1 h-3 rounded bg-[#9ac7ff]", "left-4 right-4 bottom-1 h-1 rounded bg-[#4b5563]"],
+  },
+  plant: {
+    base: "bg-[#fdf7e8]",
+    detail: ["left-2 right-2 top-1 h-3 rounded bg-[#86efac]", "left-3 right-3 bottom-1 h-1 rounded bg-[#7f5539]"]
+  },
+  floorA: {
+    base: "bg-[#f7f1e3]",
     detail: [
-      "inset-x-1 top-1 h-2 rounded bg-[#94a3b8]",
-      "inset-x-2 bottom-1 h-2 rounded bg-[#cbd5f5]",
+      "inset-0 border border-[#e9dfca] opacity-70",
+      "-left-2 right-0 top-2 h-[1px] bg-[#dfd4be] rotate-45",
+    ],
+  },
+  floorB: {
+    base: "bg-[#f2ebdd]",
+    detail: [
+      "inset-0 border border-[#e3d9c5] opacity-60",
+      "left-0 -right-2 top-2 h-[1px] bg-[#d5c8b1] -rotate-45",
     ],
   },
   worktable: {
@@ -47,30 +136,31 @@ const tilePieces: Record<string, { base: string; detail?: string[] }> = {
   },
   chair: {
     base: "bg-[#d4d1cc]",
-    detail: [
-      "left-2 right-2 top-1 h-1 rounded bg-[#a8a29e]",
-      "left-1 right-1 top-2 h-2 rounded bg-[#7c6f64]",
-    ],
+    detail: ["left-2 right-2 top-1 h-1 rounded bg-[#a8a29e]", "left-1 right-1 top-2 h-2 rounded bg-[#7c6f64]"]
   },
-  monitor: {
-    base: "bg-[#fefcf5]",
-    detail: ["left-1 right-1 top-1 h-3 rounded bg-[#a3c7ff]", "left-3 right-3 bottom-1 h-1 rounded bg-[#475569]"],
+  centerTableTopLeft: {
+    base: "bg-[#ded6c8]",
+    detail: ["inset-x-1 top-1 h-1 bg-[#c4b8a3]", "left-2 top-2 h-2 w-2 rounded-full bg-[#f87171]"],
   },
-  console: {
-    base: "bg-[#d1f3ff]",
-    detail: ["inset-1 rounded bg-[#8de0ff]", "inset-x-2 bottom-1 h-1 rounded bg-[#f472b6]"],
+  centerTableTopRight: {
+    base: "bg-[#ded6c8]",
+    detail: ["inset-x-1 top-1 h-1 bg-[#c4b8a3]", "right-2 top-2 h-2 w-2 rounded-full bg-[#60a5fa]"],
   },
-  shelf: {
-    base: "bg-[#bac8ff]",
-    detail: ["left-1 right-1 top-1 h-1 rounded bg-[#7dd3fc]", "left-1 right-1 top-3 h-1 rounded bg-[#fbbf24]"],
+  centerTableBottomLeft: {
+    base: "bg-[#d1c8bb]",
+    detail: ["inset-x-1 bottom-1 h-1 bg-[#b6aa96]", "left-3 bottom-2 h-1 w-3 bg-[#9c8f7b]"]
   },
-  books: {
-    base: "bg-[#fefcf5]",
-    detail: ["inset-x-2 top-1 h-1 rounded bg-[#a78bfa]", "inset-x-2 top-3 h-1 rounded bg-[#f472b6]"],
+  centerTableBottomRight: {
+    base: "bg-[#d1c8bb]",
+    detail: ["inset-x-1 bottom-1 h-1 bg-[#b6aa96]", "right-3 bottom-2 h-1 w-3 bg-[#9c8f7b]"]
   },
-  crate: {
-    base: "bg-[#f6d6b8]",
-    detail: ["inset-x-1 top-1 h-1 rounded bg-[#eab38d]", "inset-x-1 top-3 h-1 rounded bg-[#eab38d]"],
+  centerLightRed: {
+    base: "bg-transparent",
+    detail: ["inset-1 rounded-full bg-[#fee2e2]", "inset-2 rounded-full bg-[#f87171]"]
+  },
+  centerLightBlue: {
+    base: "bg-transparent",
+    detail: ["inset-1 rounded-full bg-[#dbeafe]", "inset-2 rounded-full bg-[#60a5fa]"]
   },
 };
 
@@ -90,13 +180,13 @@ const characters = [
     task: "Things sync + routing",
     state: "routing",
     row: 5,
-    col: 7,
+    col: 8,
     palette: { primary: "bg-indigo-500", secondary: "bg-sky-200" },
   },
   {
     name: "Higgsfield Bot",
     role: "Panel Render",
-    task: "Queue idle",
+    task: "Queue active",
     state: "rendering",
     row: 7,
     col: 3,
@@ -130,9 +220,9 @@ const stateLabels: Record<string, string> = {
 };
 
 function renderTile(type: string, key: string) {
-  const tile = tilePieces[type] ?? tilePieces.floor;
+  const tile = tilePieces[type] ?? tilePieces.floorA;
   return (
-    <div key={key} className={`relative h-6 w-6 rounded-[2px] ${tile.base}`}>
+    <div key={key} className={`relative h-6 w-6 rounded-[2px] ${tile.base}`} style={tile.style}>
       {tile.detail?.map((detailClass, index) => (
         <span key={index} className={`absolute ${detailClass}`} />
       ))}
